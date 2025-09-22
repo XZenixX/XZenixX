@@ -22,7 +22,7 @@ end
 
 --// Animation IDs (editable)
 local Animations = {
-    Idle = 0,   -- editable
+    Idle = 134624487641895,   -- editable
     Run = 140290021376754,    -- editable
     Jump = 140290021376754,   -- editable
     Special = 140290021376754 -- editable
