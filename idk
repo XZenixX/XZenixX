@@ -1,0 +1,84 @@
+--// Services
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+--// Player + Character
+local plr = Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+
+-- remove default Animate script
+local animate = char:FindFirstChild("Animate")
+if animate then
+    animate:Destroy()
+end
+
+--// Animation setup function
+local function loadAnim(id)
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://" .. tostring(id)
+    return hum:LoadAnimation(anim)
+end
+
+--// Animation IDs (editable)
+local Animations = {
+    Idle = 0,   -- editable
+    Run = 140290021376754,    -- editable
+    Jump = 140290021376754,   -- editable
+    Special = 140290021376754 -- editable
+}
+
+--// Load animations
+local idleTrack    = loadAnim(Animations.Idle)
+local runTrack     = loadAnim(Animations.Run)
+local jumpTrack    = loadAnim(Animations.Jump)
+local specialTrack = loadAnim(Animations.Special)
+
+jumpTrack.Looped = false
+specialTrack.Looped = false
+
+--// Running handler
+hum.Running:Connect(function(speed)
+    if speed > 0.1 then
+        if not runTrack.IsPlaying then
+            runTrack:Play()
+        end
+    else
+        if runTrack.IsPlaying then
+            runTrack:Stop()
+        end
+    end
+end)
+
+--// Jumping
+hum.Jumping:Connect(function(active)
+    if active then
+        jumpTrack:Play()
+    end
+end)
+
+--// Handle landing
+hum.StateChanged:Connect(function(_, newState)
+    if newState == Enum.HumanoidStateType.Landed then
+        if jumpTrack.IsPlaying then
+            jumpTrack:Stop()
+        end
+    elseif newState == Enum.HumanoidStateType.Freefall then
+        if not jumpTrack.IsPlaying then
+            jumpTrack:Play()
+        end
+    end
+end)
+
+--// Keybind (E for special animation)
+UserInputService.InputBegan:Connect(function(input, gp)
+    if not gp and input.KeyCode == Enum.KeyCode.E then
+        jumpTrack:Stop()
+        runTrack:Stop()
+        specialTrack:Play()
+        specialTrack.Stopped:Wait()
+    end
+end)
+
+--// Play idle at start
+idleTrack:Play()
